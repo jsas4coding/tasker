@@ -1,0 +1,23 @@
+# yaml-language-server: $schema=../schemas/tasks.schema.json
+tasks:
+  dev:unit:
+    name: Unit Tests (dev)
+    description: Run unit tests
+    environment: dev
+    cmds:
+      - go test ./...
+
+  dev:coverage:
+    name: Coverage (dev)
+    description: Run tests with coverage report
+    environment: dev
+    cmds:
+      - go test -coverprofile=coverage.out ./...
+      - go tool cover -html=coverage.out -o coverage.html
+
+  dev:race:
+    name: Race Detection (dev)
+    description: Run tests with race detector
+    environment: dev
+    cmds:
+      - go test -race ./...

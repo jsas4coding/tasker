@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=schemas/tasker.schema.json
+module: tasker.jsas.dev
+name: Tasker
+description: Task bundler for Taskfile.yml and Makefile generation
+version: "3"
+
+environments:
+  dev:
+    name: Development
+    description: Local development environment
+    dotenv: [".env", ".env.local"]
+  test:
+    name: Testing
+    description: Automated testing environment
+    dotenv: [".env", ".env.test"]
+  prod:
+    name: Production
+    description: Production environment
+    dotenv: [".env", ".env.production"]
+
+vars:
+  PROJECT_NAME: tasker
+  PROJECT_ROOT: "{{.ROOT_DIR}}"
+
+groups:
+  go:
+    name: Go
+    description: Go build and dependency management
+  lint:
+    name: Lint
+    description: Code quality and linting
+  test:
+    name: Test
+    description: Testing and coverage

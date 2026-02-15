@@ -1,0 +1,33 @@
+# yaml-language-server: $schema=../schemas/tasks.schema.json
+tasks:
+  dev:vet:
+    name: Vet (dev)
+    description: Run go vet for code analysis
+    environment: dev
+    cmds:
+      - go vet ./...
+
+  dev:fmt:
+    name: Format (dev)
+    description: Format Go source files with goimports
+    environment: dev
+    cmds:
+      - goimports -w .
+
+  dev:lint:
+    name: Lint (dev)
+    description: Run golangci-lint and revive
+    environment: dev
+    cmds:
+      - golangci-lint run ./...
+      - revive -config revive.toml ./...
+
+  dev:check:
+    name: Check All (dev)
+    description: Run fmt, lint, vet, and tests
+    environment: dev
+    cmds:
+      - goimports -w .
+      - golangci-lint run ./...
+      - go vet ./...
+      - go test -race ./...
