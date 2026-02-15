@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/jsas4coding/tasker/v0.1.0/schemas/tasks.schema.json",
+  "$id": "https://raw.githubusercontent.com/jsas4coding/tasker/v1.0.1/schemas/tasks.schema.json",
   "title": "Tasker Group Tasks",
   "description": "Schema for .tasker/tasks/*.yml files - task definitions within a Tasker group",
   "type": "object",
