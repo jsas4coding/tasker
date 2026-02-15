@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/jsas4coding/tasker/v0.1.0/schemas/tasker.schema.json",
+  "$id": "https://raw.githubusercontent.com/jsas4coding/tasker/v1.0.1/schemas/tasker.schema.json",
   "title": "Tasker Configuration",
   "description": "Schema for .tasker/config.yml - task bundler configuration for Taskfile.yml and Makefile generation",
   "type": "object",

@@ -293,10 +293,10 @@ YAML files include `yaml-language-server` directives for automatic validation an
 
 Schemas are versioned and available on GitHub:
 
-- `https://raw.githubusercontent.com/jsas4coding/tasker/v0.1.0/schemas/tasker.schema.json`
-- `https://raw.githubusercontent.com/jsas4coding/tasker/v0.1.0/schemas/tasks.schema.json`
+- `https://raw.githubusercontent.com/jsas4coding/tasker/v1.0.1/schemas/tasker.schema.json`
+- `https://raw.githubusercontent.com/jsas4coding/tasker/v1.0.1/schemas/tasks.schema.json`
 
-Replace `v0.1.0` with the desired version tag, or use `main` for the latest.
+Replace `v1.0.1` with the desired version tag, or use `main` for the latest.
 
 ## Generated Output
 
