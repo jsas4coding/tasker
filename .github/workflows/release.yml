@@ -1,0 +1,189 @@
+# ┌──────────────────────────────────────────────────────┐
+# │  Tasker — Release Pipeline                           │
+# │  Build · Package · Publish                           │
+# └──────────────────────────────────────────────────────┘
+
+name: "🚀 Release"
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+env:
+  GO_VERSION: "1.25.6"
+  BINARY_NAME: tasker
+
+jobs:
+  # ───────────────────────────────────────────────────────
+  # Quality gate — run all checks before release
+  # ───────────────────────────────────────────────────────
+  quality:
+    name: "🔍 Pre-release Checks"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Vet
+        run: go vet ./...
+
+      - name: Test
+        run: go test -race ./...
+
+      - name: Govulncheck
+        run: |
+          go install golang.org/x/vuln/cmd/govulncheck@latest
+          govulncheck ./...
+
+      - name: Verify module
+        run: go mod verify
+
+      - name: Verify schema sync
+        run: |
+          diff schemas/tasker.schema.json internal/config/schemas/tasker.schema.json
+          diff schemas/tasks.schema.json internal/config/schemas/tasks.schema.json
+
+  # ───────────────────────────────────────────────────────
+  # Build — cross-compile for all platforms
+  # ───────────────────────────────────────────────────────
+  build:
+    name: "📦 Build (${{ matrix.goos }}/${{ matrix.goarch }})"
+    runs-on: ubuntu-latest
+    needs: quality
+    strategy:
+      matrix:
+        include:
+          - goos: linux
+            goarch: amd64
+            suffix: ""
+          - goos: linux
+            goarch: arm64
+            suffix: ""
+          - goos: darwin
+            goarch: amd64
+            suffix: ""
+          - goos: darwin
+            goarch: arm64
+            suffix: ""
+          - goos: windows
+            goarch: amd64
+            suffix: ".exe"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build binary
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: "0"
+        run: |
+          LDFLAGS="-s -w"
+          LDFLAGS="$LDFLAGS -X tasker.jsas.dev/internal/cmd.Version=${{ steps.version.outputs.version }}"
+          LDFLAGS="$LDFLAGS -X tasker.jsas.dev/internal/cmd.BuildTime=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          LDFLAGS="$LDFLAGS -X tasker.jsas.dev/internal/cmd.GitCommit=${{ github.sha }}"
+
+          ARTIFACT="${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}"
+          go build -ldflags="$LDFLAGS" -o "$ARTIFACT" ./cmd/tasker
+
+          echo "artifact=$ARTIFACT" >> "$GITHUB_OUTPUT"
+
+      - name: Upload binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: ${{ env.BINARY_NAME }}-${{ matrix.goos }}-${{ matrix.goarch }}${{ matrix.suffix }}
+          retention-days: 1
+
+  # ───────────────────────────────────────────────────────
+  # Release — create GitHub release with all artifacts
+  # ───────────────────────────────────────────────────────
+  release:
+    name: "🚀 Publish Release"
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Copy schemas
+        run: |
+          cp schemas/tasker.schema.json artifacts/
+          cp schemas/tasks.schema.json artifacts/
+
+      - name: Generate checksums
+        working-directory: artifacts
+        run: |
+          sha256sum * > checksums.txt
+          echo ""
+          echo "═══════════════════════════════════════════"
+          echo "  📋 Release Checksums"
+          echo "═══════════════════════════════════════════"
+          cat checksums.txt
+
+      - name: Extract version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Tasker v${{ steps.version.outputs.version }}"
+          generate_release_notes: true
+          files: |
+            artifacts/tasker-*
+            artifacts/tasker.schema.json
+            artifacts/tasks.schema.json
+            artifacts/checksums.txt
+          body: |
+            ## Installation
+
+            **Go install:**
+            ```bash
+            go install tasker.jsas.dev/cmd/tasker@v${{ steps.version.outputs.version }}
+            ```
+
+            **Binary download:**
+            Download the appropriate binary for your platform below, then:
+            ```bash
+            chmod +x tasker-*
+            mv tasker-* /usr/local/bin/tasker
+            ```
+
+            ## Schemas
+
+            JSON Schemas for IDE support are included in this release and available at:
+            ```
+            https://raw.githubusercontent.com/jsas4coding/tasker/v${{ steps.version.outputs.version }}/schemas/tasker.schema.json
+            https://raw.githubusercontent.com/jsas4coding/tasker/v${{ steps.version.outputs.version }}/schemas/tasks.schema.json
+            ```
+
+            ## Verify
+
+            ```bash
+            sha256sum -c checksums.txt
+            ```

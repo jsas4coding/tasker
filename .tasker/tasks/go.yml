@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=../schemas/tasks.schema.json
+tasks:
+  dev:build:
+    name: Build (dev)
+    description: Build with race detector for development
+    environment: dev
+    cmds:
+      - mkdir -p bin
+      - go build -race -o bin/tasker ./cmd/tasker
+
+  dev:run:
+    name: Run (dev)
+    description: Build and run in development mode
+    environment: dev
+    cmds:
+      - go run ./cmd/tasker
+
+  dev:tidy:
+    name: Tidy (dev)
+    description: Run go mod tidy
+    environment: dev
+    cmds:
+      - go mod tidy
+
+  dev:install:
+    name: Install (dev)
+    description: Install to /workspace/bin
+    environment: dev
+    cmds:
+      - mkdir -p /workspace/bin
+      - go build -race -o /workspace/bin/tasker ./cmd/tasker
+
+  prod:build:
+    name: Build (prod)
+    description: Optimized production build with version injection
+    environment: prod
+    cmds:
+      - mkdir -p bin
+      - CGO_ENABLED=0 go build -ldflags="-s -w" -o bin/tasker ./cmd/tasker
