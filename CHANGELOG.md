@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- `Tasker.json` output — JSON snapshot of fully resolved project (metadata, environments, groups, tasks)
+- `tasker export` command — generates only `Tasker.json`
+- Built-in `tasker:*` task group — auto-injected tasks (generate, validate, list, init, export, version) in all output artifacts
+- Reserved group key validation — configs declaring `groups.tasker` are rejected
+- `builtin` flag on groups and tasks in `Tasker.json` to distinguish injected vs user-defined
+
+### Changed
+
+- `tasker generate` now produces `Tasker.json` alongside `Taskfile.yml` and `Makefile`
+- `tasker list` now shows built-in `tasker:*` commands in output
+
 ## [1.0.1] - 2026-02-15
 
 ### Added

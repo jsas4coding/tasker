@@ -82,6 +82,7 @@ Desktop.ini
 
 Taskfile.yml
 Makefile
+Tasker.json
 
 # ==============================================================================
 # Security (never commit)

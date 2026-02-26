@@ -6,6 +6,7 @@ import (
 	"sort"
 
 	"tasker.jsas.dev/internal/config"
+	"tasker.jsas.dev/internal/constants"
 )
 
 // ResolvedTask is a fully qualified task ready for output generation.
@@ -84,6 +85,19 @@ func FilterByEnv(tasks []ResolvedTask, env string) []ResolvedTask {
 		}
 	}
 	return filtered
+}
+
+// InjectBuiltins appends the built-in tasker:* tasks to the resolved project.
+func InjectBuiltins(project *ResolvedProject) {
+	builtins := []ResolvedTask{
+		{FullKey: "tasker:export", GroupKey: constants.BuiltinGroupKey, TaskKey: "export", Name: "Export", Description: "Export resolved config as Tasker.json", Cmds: []string{"tasker export"}},
+		{FullKey: "tasker:generate", GroupKey: constants.BuiltinGroupKey, TaskKey: "generate", Name: "Generate", Description: "Generate Taskfile.yml, Makefile, and Tasker.json", Cmds: []string{"tasker generate"}},
+		{FullKey: "tasker:init", GroupKey: constants.BuiltinGroupKey, TaskKey: "init", Name: "Init", Description: "Scaffold a new Tasker project", Cmds: []string{"tasker init"}},
+		{FullKey: "tasker:list", GroupKey: constants.BuiltinGroupKey, TaskKey: "list", Name: "List", Description: "Show structured task list", Cmds: []string{"tasker list"}},
+		{FullKey: "tasker:validate", GroupKey: constants.BuiltinGroupKey, TaskKey: "validate", Name: "Validate", Description: "Validate Tasker configuration", Cmds: []string{"tasker validate"}},
+		{FullKey: "tasker:version", GroupKey: constants.BuiltinGroupKey, TaskKey: "version", Name: "Version", Description: "Print version information", Cmds: []string{"tasker version"}},
+	}
+	project.Groups[constants.BuiltinGroupKey] = builtins
 }
 
 // SortedGroupKeys returns group keys in alphabetical order.

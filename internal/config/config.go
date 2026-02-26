@@ -101,6 +101,9 @@ func (p *Project) Validate() []error {
 
 	// Validate identifier keys (defense in depth — schema also enforces this)
 	for key := range p.Config.Groups {
+		if key == constants.BuiltinGroupKey {
+			errs = append(errs, fmt.Errorf("config: group key %q is reserved for built-in commands", key))
+		}
 		if !identifierPattern.MatchString(key) {
 			errs = append(errs, fmt.Errorf("config: invalid group key %q (must match %s)", key, identifierPattern))
 		}

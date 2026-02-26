@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-Tasker is a Go CLI tool that reads structured configuration (`.tasker/config.yml` + `.tasker/tasks/*.yml`) and bundles into a single `Taskfile.yml` and `Makefile`.
+Tasker is a Go CLI tool that reads structured configuration (`.tasker/config.yml` + `.tasker/tasks/*.yml`) and bundles into a single `Taskfile.yml`, `Makefile`, and `Tasker.json`.
 
 ## Architecture
 
@@ -18,6 +18,7 @@ tasker/
 │   │   ├── validate.go              # Config validation
 │   │   ├── list.go                  # Structured help/list
 │   │   ├── completion.go            # Shell completions for tasker CLI
+│   │   ├── export.go               # Export only Tasker.json
 │   │   └── version.go              # Version display (ldflags)
 │   ├── config/                      # Configuration parsing
 │   │   ├── config.go                # Config schema + loading
@@ -28,9 +29,10 @@ tasker/
 │   │   └── schemas/                 # JSON Schema files (embedded copy)
 │   ├── bundler/                     # Output generation
 │   │   ├── taskfile.go              # Taskfile.yml generation
-│   │   └── makefile.go              # Makefile generation
+│   │   ├── makefile.go              # Makefile generation
+│   │   └── tasker_json.go           # Tasker.json generation
 │   ├── resolver/
-│   │   └── resolver.go              # Task resolution and env guards
+│   │   └── resolver.go              # Task resolution, env guards, builtin injection
 │   ├── constants/
 │   │   └── constants.go             # Shared constants (paths, permissions)
 │   └── output/
@@ -48,7 +50,8 @@ tasker/
 
 ```bash
 go build -o bin/tasker ./cmd/tasker   # Build
-tasker generate                       # Generate Taskfile.yml + Makefile
+tasker generate                       # Generate Taskfile.yml + Makefile + Tasker.json
+tasker export                         # Generate only Tasker.json
 tasker validate                       # Validate config
 tasker list                           # Show task list
 tasker init                           # Scaffold new project
@@ -62,7 +65,9 @@ tasker init                           # Scaffold new project
 - Task file naming: lowercase of group key (e.g., `go` → `go.yml`)
 - All tasker config lives in `.tasker/` directory
 - Environment guards via preconditions in generated Taskfile.yml
-- Generated files (`Taskfile.yml`, `Makefile`) are gitignored
+- Generated files (`Taskfile.yml`, `Makefile`, `Tasker.json`) are gitignored
+- Group key `tasker` is reserved for built-in commands (rejected in validation)
+- `resolver.InjectBuiltins()` adds `tasker:*` tasks after resolution
 - JSON Schemas: canonical at `schemas/`, embedded copy at `internal/config/schemas/`, exported to `.tasker/schemas/` on init
 - Schema `$id` uses versioned GitHub raw URLs
 - When updating schemas, edit `schemas/*.json` first, then copy to `internal/config/schemas/`

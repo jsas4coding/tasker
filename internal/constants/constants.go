@@ -13,8 +13,10 @@ const (
 	ConfigFile      = "config.yml"
 	TasksDir        = ".tasker/tasks"
 	SchemasDir      = ".tasker/schemas"
-	TaskfileOutput  = "Taskfile.yml"
-	MakefileOutput  = "Makefile"
+	TaskfileOutput    = "Taskfile.yml"
+	MakefileOutput    = "Makefile"
+	TaskerJSONOutput  = "Tasker.json"
+	BuiltinGroupKey   = "tasker"
 	TaskSchemaFile  = "tasker.schema.json"
 	TasksSchemaFile = "tasks.schema.json"
 )

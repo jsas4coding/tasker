@@ -2,7 +2,7 @@
 
 Task bundler for [Taskfile.yml](https://taskfile.dev/) and Makefile generation.
 
-Tasker reads structured configuration from `.tasker/config.yml` and `.tasker/tasks/*.yml`, then bundles everything into a single `Taskfile.yml` and `Makefile`. It keeps project roots clean, provides structured task navigation with `{group}:{environment}:{action}` naming, dotenv loading per environment, and environment guards that prevent running the wrong tasks in the wrong context.
+Tasker reads structured configuration from `.tasker/config.yml` and `.tasker/tasks/*.yml`, then bundles everything into a single `Taskfile.yml`, `Makefile`, and `Tasker.json`. It keeps project roots clean, provides structured task navigation with `{group}:{environment}:{action}` naming, dotenv loading per environment, and environment guards that prevent running the wrong tasks in the wrong context.
 
 ## Why Tasker?
 
@@ -39,7 +39,7 @@ tasker init
 $EDITOR .tasker/config.yml
 $EDITOR .tasker/tasks/*.yml
 
-# Generate Taskfile.yml and Makefile
+# Generate Taskfile.yml, Makefile, and Tasker.json
 tasker generate
 
 # Run tasks via Task or Make
@@ -63,10 +63,11 @@ project/
 │       ├── tasker.schema.json
 │       └── tasks.schema.json
 ├── Taskfile.yml                # Generated — do not edit
-└── Makefile                    # Generated — do not edit
+├── Makefile                    # Generated — do not edit
+└── Tasker.json                 # Generated — do not edit
 ```
 
-The generated files (`Taskfile.yml` and `Makefile`) should be gitignored. They are regenerated from `.tasker/` source files with `tasker generate`.
+The generated files (`Taskfile.yml`, `Makefile`, and `Tasker.json`) should be gitignored. They are regenerated from `.tasker/` source files with `tasker generate`.
 
 ## Configuration
 
@@ -231,7 +232,8 @@ environments:
 | Command | Description |
 |---------|-------------|
 | `tasker` | Alias for `tasker generate` |
-| `tasker generate` | Generate `Taskfile.yml` and `Makefile` from `.tasker/` |
+| `tasker generate` | Generate `Taskfile.yml`, `Makefile`, and `Tasker.json` from `.tasker/` |
+| `tasker export` | Generate only `Tasker.json` (resolved project snapshot) |
 | `tasker init` | Scaffold `.tasker/` directory with starter configuration |
 | `tasker validate` | Validate configuration without generating output |
 | `tasker list` | Display structured task list with groups and environments |
@@ -321,6 +323,34 @@ The generated `Makefile` includes:
 - All tasks as targets with `## description` comments
 - Environment guard shell checks
 - Colons in task names replaced with dashes (`go:dev:build` → `go-dev-build`)
+
+### Tasker.json
+
+The generated `Tasker.json` is a JSON snapshot of the fully resolved project. It includes:
+
+- `meta` — generation timestamp, source config path
+- `module`, `name`, `description`, `version` — project metadata
+- `vars` — global variables
+- `environments` — map of all declared environments
+- `groups` — ordered array of task groups, each with its tasks
+- `builtin` flags on groups and tasks to distinguish auto-injected `tasker:*` commands from user-defined tasks
+
+Use `tasker export` to generate only `Tasker.json` without `Taskfile.yml` or `Makefile`.
+
+### Built-in `tasker:*` Tasks
+
+All output artifacts include a built-in `tasker` group with management commands:
+
+| Task | Description |
+|------|-------------|
+| `tasker:generate` | Generate Taskfile.yml, Makefile, and Tasker.json |
+| `tasker:export` | Export resolved config as Tasker.json |
+| `tasker:validate` | Validate Tasker configuration |
+| `tasker:list` | Show structured task list |
+| `tasker:init` | Scaffold a new Tasker project |
+| `tasker:version` | Print version information |
+
+The group key `tasker` is reserved and cannot be used in `config.yml`.
 
 ### Taskfile Version Compatibility
 

@@ -70,10 +70,10 @@ func GenerateMakefile(project *resolver.ResolvedProject) []byte {
 	b.WriteString("\t@echo \"\"\n")
 
 	for _, groupKey := range groupKeys {
-		group := project.Config.Groups[groupKey]
 		tasks := project.Groups[groupKey]
+		groupName, groupDesc := GroupMetadata(project.Config, groupKey)
 
-		b.WriteString(fmt.Sprintf("\t@echo \"%s  %s\"\n", makefileShellEscape(group.Name), makefileShellEscape(group.Description)))
+		b.WriteString(fmt.Sprintf("\t@echo \"%s  %s\"\n", makefileShellEscape(groupName), makefileShellEscape(groupDesc)))
 
 		for _, rt := range tasks {
 			target := TaskColonToDash(rt.FullKey)

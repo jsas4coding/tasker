@@ -8,10 +8,10 @@ import (
 	"tasker.jsas.dev/internal/resolver"
 )
 
-var generateCmd = &cobra.Command{
-	Use:   "generate",
-	Short: "Bundle .tasker/ config into Taskfile.yml, Makefile, and Tasker.json",
-	Long:  "Reads the Tasker configuration and generates Taskfile.yml, Makefile, and Tasker.json.",
+var exportCmd = &cobra.Command{
+	Use:   "export",
+	Short: "Export resolved config as Tasker.json",
+	Long:  "Loads, validates, and resolves the Tasker configuration, then writes Tasker.json.",
 	RunE: func(_ *cobra.Command, _ []string) error {
 		project, err := config.Load(".")
 		if err != nil {
@@ -32,16 +32,6 @@ var generateCmd = &cobra.Command{
 
 		resolver.InjectBuiltins(resolved)
 
-		if err := bundler.WriteTaskfile(resolved, "."); err != nil {
-			return err
-		}
-		output.Success("Generated Taskfile.yml")
-
-		if err := bundler.WriteMakefile(resolved, "."); err != nil {
-			return err
-		}
-		output.Success("Generated Makefile")
-
 		if err := bundler.WriteTaskerJSON(resolved, "."); err != nil {
 			return err
 		}
@@ -52,5 +42,5 @@ var generateCmd = &cobra.Command{
 }
 
 func init() {
-	rootCmd.AddCommand(generateCmd)
+	rootCmd.AddCommand(exportCmd)
 }

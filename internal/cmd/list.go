@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/spf13/cobra"
+	"tasker.jsas.dev/internal/bundler"
 	"tasker.jsas.dev/internal/config"
 	"tasker.jsas.dev/internal/output"
 	"tasker.jsas.dev/internal/resolver"
@@ -24,6 +25,8 @@ var listCmd = &cobra.Command{
 			return err
 		}
 
+		resolver.InjectBuiltins(resolved)
+
 		output.Section(fmt.Sprintf("%s - %s", project.Config.Name, project.Config.Description))
 
 		if len(project.Config.Environments) > 0 {
@@ -37,10 +40,10 @@ var listCmd = &cobra.Command{
 
 		groupKeys := resolver.SortedGroupKeys(resolved.Groups)
 		for _, groupKey := range groupKeys {
-			group := project.Config.Groups[groupKey]
+			groupName, groupDesc := bundler.GroupMetadata(project.Config, groupKey)
 			tasks := resolved.Groups[groupKey]
 
-			fmt.Printf("%s  %s\n", group.Name, group.Description)
+			fmt.Printf("%s  %s\n", groupName, groupDesc)
 			for _, rt := range tasks {
 				fmt.Printf("  %-30s %-25s %s\n", rt.FullKey, rt.Name, rt.Description)
 			}
